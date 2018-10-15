@@ -8,30 +8,92 @@ isDog = function (obj) {
     return obj instanceof Dog;
 };
 
+Card.prototype.getCustomDescriptions = function () {
+    return [getAnimalType(this)];
+};
+
+function getAnimalType(card) {
+    let result = [];
+    if (isDuck(card))
+        result.push("Утка");
+    if (isDog(card))
+        result.push("Собака");
+    const rawResult = result.join('-');
+    return rawResult.length === 0 ? "Существо" : rawResult;
+}
 
 // Основа для утки.
-function Duck() {
+function Duck(name, damage) {
+    Card.call(this, name || "", damage || 2);
     this.quacks = () => { console.log('quack') };
     this.swims = () => { console.log('float: both;') };
 }
 
+Duck.prototype = Object.create(Card.prototype);
+Duck.prototype.constructor = Duck;
 
 // Основа для собаки.
-function Dog() {
+function Dog(name, damage) {
+    Card.call(this, name || "", damage || 1);
     this.swims = () => { console.log('float: none;') };
 }
 
+Dog.prototype = Object.create(Card.prototype);
+Dog.prototype.constructor = Dog;
 
-// Колода Шерифа, нижнего игрока.
+function Trasher(name) {
+    Dog.call(this, name || "", 5);
+
+}
+
+Trasher.prototype = Object.create(Dog.prototype);
+Trasher.prototype.constructor = Trasher;
+
+function Gatling(name) {
+    Card.call(this, name, 6);
+}
+
+Gatling.prototype = Object.create(Card.prototype)
+Gatling.prototype.constructor = Gatling;
+Gatling.prototype.attack = function (gameContext, continuation) {
+    const taskQueue = new TaskQueue();
+    const {oppositePlayer, position} = gameContext;
+    const table = oppositePlayer.table;
+
+    for (let i = 0; i < table.length; i++) {
+        taskQueue.push(onDone => {
+            const oppositeCard = table[i];
+            if (oppositeCard && i != position) {
+                taskQueue.push(onDone => this.view.showAttack(onDone));
+                this.dealDamageToCreature(2, oppositeCard, gameContext, onDone);
+            } else {
+                onDone();
+            }
+        });
+    }
+    taskQueue.continueWith(continuation);
+};
+
+Trasher.prototype.modifyTakenDamage = function(value, fromCard, gameContext, continuation) {
+    const taskQueue = new TaskQueue();
+
+    taskQueue.push(onDone => {
+        this.view.signalAbility(onDone);
+
+    });
+
+    taskQueue.continueWith(() => continuation(--value));
+};
 const seriffStartDeck = [
-    new Card('Мирный житель', 2),
-    new Card('Мирный житель', 2),
-    new Card('Мирный житель', 2),
+    new Duck(),
+    new Duck(),
+    new Duck(),
+    new Gatling(),
 ];
-
-// Колода Бандита, верхнего игрока.
 const banditStartDeck = [
-    new Card('Бандит', 3),
+    new Dog(),
+    new Dog(),
+    new Trasher("TRASHER"),
 ];
 
 
@@ -45,5 +107,5 @@ function getSpeedRate() {
 
 // Запуск игры.
 game.play(false, (winner) => {
-    alert('Победил ' + winner.name);
+    //alert('Победил ' + winner.name);
 });

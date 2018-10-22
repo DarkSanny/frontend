@@ -1,3 +1,7 @@
+import Card from './Card.js';
+import Game from './Game.js';
+import {setSpeedRate as setGameSpeedRate} from './SpeedRate.js';
+
 // Отвечает является ли карта уткой.
 function isDuck(card) {
     return card && card.quacks && card.swims;
@@ -22,31 +26,115 @@ function getCreatureDescription(card) {
     return 'Существо';
 }
 
+class Creature extends Card {
+    constructor(name, power) {
+        super(name || "Creature", power || 1);
+    }
 
-
-// Основа для утки.
-function Duck() {
-    this.quacks = () => { console.log('quack') };
-    this.swims = () => { console.log('float: both;') };
+    getDescriptions() {
+        return [getCreatureDescription(this)]
+            .concat(super.getDescriptions());
+    }
 }
 
+class Duck extends Creature {
+    constructor(name, strength) {
+        super(name || "Duck", strength || 2);
+    }
 
-// Основа для собаки.
-function Dog() {
-    this.swims = () => { console.log('float: none;') };
+    quacks() {
+        console.log('quack')
+    };
+
+    swims() {
+        console.log('float: both;')
+    };
 }
 
+class Dog extends Creature {
+    constructor(name, strength) {
+        super(name || "Dog", strength || 3);
+    }
 
-// Колода Шерифа, нижнего игрока.
+    swims() {
+        console.log('float: none;')
+    };
+}
+
+class Lad extends Dog {
+    constructor() {
+        super('Братки', 2);
+    }
+
+    static get count() {
+        return this._count || 0;
+    }
+
+    static set count(value) {
+        this._count = value;
+    }
+
+    doAfterComingIntoPlay(gameContext, continuation) {
+        Lad.count++;
+        super.doAfterComingIntoPlay(gameContext, continuation);
+    }
+
+    doBeforeRemoving(continuation) {
+        Lad.count--;
+        super.doBeforeRemoving(continuation);
+    }
+
+    static getBonus() {
+        return this.count * (this.count + 1) / 2;
+    }
+
+    modifyDealedDamageToCreature(value, toCard, gameContext, continuation) {
+        super.modifyDealedDamageToCreature(Lad.getBonus() + value, toCard, gameContext, continuation);
+    };
+
+    modifyTakenDamage(value, fromCard, gameContext, continuation) {
+        let value1 = value - Lad.getBonus();
+        super.modifyTakenDamage(value1 < 0 ? 0 : value1, fromCard, gameContext, continuation);
+    };
+
+    getDescriptions() {
+        return ["Чем их больше, тем они сильнее"]
+            .concat(super.getDescriptions());
+    }
+}
+
+class Rogue extends Creature{
+    constructor() {
+        super("Изгой", 2);
+    }
+
+    doBeforeAttack(gameContext, continuation) {
+        const {currentPlayer, oppositePlayer, position, updateView} = gameContext;
+        if (oppositePlayer.table[position]){
+            if (Object.getOwnPropertyNames(oppositePlayer.table[position].__proto__).indexOf('modifyDealedDamageToCreature') != -1) {
+                this.modifyDealedDamageToCreature = oppositePlayer.table[position].__proto__.modifyDealedDamageToCreature;
+                delete oppositePlayer.table[position].__proto__.modifyDealedDamageToCreature;
+            }
+            if (Object.getOwnPropertyNames(oppositePlayer.table[position].__proto__).indexOf('modifyTakenDamage') != -1) {
+                this.modifyTakenDamage = oppositePlayer.table[position].__proto__.modifyTakenDamage;
+                delete oppositePlayer.table[position].__proto__.modifyTakenDamage;
+            }
+        }
+        gameContext.updateView();
+        super.doBeforeAttack(gameContext, continuation);
+    };
+}
+
 const seriffStartDeck = [
-    new Card('Мирный житель', 2),
-    new Card('Мирный житель', 2),
-    new Card('Мирный житель', 2),
+    new Duck(),
+    new Duck(),
+    new Duck(),
+    new Rogue(),
 ];
-
-// Колода Бандита, верхнего игрока.
 const banditStartDeck = [
-    new Card('Бандит', 3),
+    new Lad(),
+    new Lad(),
+    new Lad(),
 ];
 
 
@@ -54,9 +142,9 @@ const banditStartDeck = [
 const game = new Game(seriffStartDeck, banditStartDeck);
 
 // Глобальный объект, позволяющий управлять скоростью всех анимаций.
-SpeedRate.set(1);
+setGameSpeedRate(1);
 
 // Запуск игры.
 game.play(false, (winner) => {
-    alert('Победил ' + winner.name);
+    //alert('Победил ' + winner.name);
 });

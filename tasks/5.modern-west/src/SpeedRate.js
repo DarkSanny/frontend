@@ -14,3 +14,7 @@ const SpeedRate = function() {
         get
     };
 }();
+
+export default SpeedRate;
+export const setSpeedRate = SpeedRate.set;
+export const getSpeedRate = SpeedRate.get;

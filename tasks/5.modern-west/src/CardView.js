@@ -1,3 +1,6 @@
+import TaskQueue from './TaskQueue.js';
+import SpeedRate from './SpeedRate.js';
+
 const CardView = function() {
     function CardView() {
         this.inBottomRow = false;
@@ -181,3 +184,5 @@ const CardView = function() {
 
     return CardView;
 }();
+
+export default CardView;

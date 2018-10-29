@@ -26,6 +26,10 @@ body {
     cursor: pointer;
 }
 
+.lastStep {
+    background-color: darkseagreen;
+}
+
 .table tr:first-child td {
     border-top-color: transparent;
 }

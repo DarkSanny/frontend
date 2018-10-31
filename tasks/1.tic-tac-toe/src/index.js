@@ -7,6 +7,7 @@ function playAi(game){
     if (game.currentPlayer !== Game.ZERO)
         return;
     let maxWeight = getMostBestToStepCell(game);
+    console.log("Max weight: " + maxWeight.weight);
     game.makeStep(maxWeight.row, maxWeight.col, Game.ZERO);
     playAi(game);
 }
@@ -16,9 +17,9 @@ function getMostBestToStepCell(game) {
     let emptyCells = field.emptyCells;
     let weights = [];
     for (let cell of emptyCells) {
-        let weight = Field.getDeltas(game.countToWin, cell.row, cell.col)
+        let weight = Field.getDeltas(game.countToWin + 1, cell.row, cell.col)
             .map((deltaData) => field.getLineByDelta(deltaData))
-            .map((line) => Field.weightLine(line, Game.ZERO, Game.EMPTY) +  4 * Field.weightLine(line, Game.CROSS, Game.EMPTY))
+            .map((line) => Field.weightLine(line, Game.ZERO, Game.EMPTY) +  Field.weightLine(line, Game.CROSS, Game.EMPTY))
             .reduce((a, b) => a + b);
         weights.push({row: cell.row, col: cell.col, weight: weight});
     }

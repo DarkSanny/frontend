@@ -92,21 +92,40 @@ class Field {
         const index = (line.length + 1) / 2 - 1;
         if (line[index].symbol !== emptySymbol)
             return 0;
-        let count = 0;
-        for (let i = 0; i < line.length; i++) {
-            if (line[i].symbol === symbol || i === index)
-                count++;
-            else if (i > index)
-                break;
-            else
-                count = 0;
-        }
-        if (count === index)
-            count *= 10;
-        else if (count > index)
-            count *= 100;
+        line[index].symbol = symbol;
+        let maxLineData = this.getMaxLineData(line.map((cell) => cell.symbol), symbol, emptySymbol);
+        line[index].symbol = emptySymbol;
+        let count = sumLine(maxLineData) * maxLineData.count * maxLineData.count;
         return count;
     }
+
+    static getMaxLineData(line, symbol, empty) {
+        let currentLine = {start: false, end: false, count: 0};
+        let result = {start: false, end: false, count: 0};
+        for (let i = 0; i < line.length; i++) {
+            if (line[i] === symbol) {
+                currentLine.count++;
+            } else {
+                if (line[i] === empty) {
+                    if (currentLine.count === 0)
+                        currentLine.start = true;
+                    else currentLine.end = line[i] === empty;
+                }
+                if (currentLine.count !== 0) {
+                    if (sumLine(result) < sumLine(currentLine))
+                        result = currentLine;
+                    currentLine = {start: false, end: false, count: 0};
+                }
+            }
+        }
+        return result;
+    }
+}
+
+function sumLine(lineData) {
+    return lineData.count +
+        (lineData.start ? 1 : 0) +
+        (lineData.end ? 1 : 0);
 }
 
 export default Field;

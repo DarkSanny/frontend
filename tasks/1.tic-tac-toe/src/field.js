@@ -95,8 +95,7 @@ class Field {
         line[index].symbol = symbol;
         let maxLineData = this.getMaxLineData(line.map((cell) => cell.symbol), symbol, emptySymbol);
         line[index].symbol = emptySymbol;
-        let count = sumLine(maxLineData) * maxLineData.count * maxLineData.count;
-        return count;
+        return sumLine(maxLineData) * maxLineData.count * maxLineData.count;
     }
 
     static getMaxLineData(line, symbol, empty) {

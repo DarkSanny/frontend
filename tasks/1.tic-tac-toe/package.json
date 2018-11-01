@@ -2,9 +2,17 @@
   "name": "1.tic-tac-toe",
   "version": "0.0.1",
   "dependencies": {
-    "http-server": "^0.11.1"
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.0.4",
+    "babel-preset-env": "^1.7.0",
+    "http-server": "^0.11.1",
+    "webpack": "^4.23.1"
   },
   "scripts": {
     "start": "http-server -p 8080 -c-1 ./src"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "webpack-cli": "^3.1.2"
   }
 }

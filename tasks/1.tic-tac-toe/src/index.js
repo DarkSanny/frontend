@@ -4,15 +4,14 @@ import Field from "./field.js";
 const container = document.getElementById('fieldWrapper');
 
 function playAi(game){
-    if (game.currentPlayer !== Game.ZERO)
+    if (game.status !== null || game.currentPlayer !== Game.ZERO)
         return;
-    let maxWeight = getMostBestToStepCell(game);
-    console.log("Max weight: " + maxWeight.weight);
+    let maxWeight = getBestToStepCell(game);
     game.makeStep(maxWeight.row, maxWeight.col, Game.ZERO);
     playAi(game);
 }
 
-function getMostBestToStepCell(game) {
+function getBestToStepCell(game) {
     let field = game.field;
     let emptyCells = field.emptyCells;
     let weights = [];
